@@ -1,0 +1,20 @@
+FROM maven:3-jdk-13-alpine
+
+RUN apk --no-cache upgrade \
+  && apk add nss nspr sqlite-libs curl tar bash procps
+
+ARG USER_HOME_DIR="/root"
+ENV MAVEN_HOME /usr/share/maven
+ENV MAVEN_CONFIG "$USER_HOME_DIR/.m2"
+
+COPY ci/maven/settings-docker.xml /usr/share/maven/ref/
+
+COPY . /site
+
+WORKDIR /site
+
+RUN rm -rf service/target/ \
+    && mkdir -p service/target/ \
+    && chmod +x ci/scripts/entrypoint.build.sh
+
+ENTRYPOINT ["/site/ci/scripts/entrypoint.build.sh"]
